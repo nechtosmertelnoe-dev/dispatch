@@ -203,7 +203,7 @@ function waited(m){ return m < 60 ? m+' мин' : Math.floor(m/60)+' ч '+(m%60)
 $('#btn-google').onclick = async () => {
   const { error } = await sb.auth.signInWithOAuth({
     provider:'google',
-    options:{ redirectTo: window.location.origin }
+    options:{ redirectTo: window.location.origin + window.location.pathname }
   });
   if (error) $('#auth-msg').textContent = 'Не вышло войти: ' + error.message;
 };
