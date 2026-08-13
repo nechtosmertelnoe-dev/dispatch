@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Диспетчерская</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16181d;
+    --steel:#5b6472;
+    --hair:#c9ced6;
+    --paper:#e7eaee;
+    --card:#fff;
+    --signal:#ffd21f;
+    --alert:#c8262b;
+    --ok:#15794a;
+    --blue:#1f5f8b;
+    --r:4px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font:400 16px/1.45 "IBM Plex Sans",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  h1,h2,h3{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.02em;margin:0}
+  .mono{font-family:"IBM Plex Mono",monospace;font-weight:500}
+
+  /* ---------- каркас ---------- */
+  header{
+    position:sticky;top:0;z-index:20;
+    background:var(--ink);color:#fff;
+    padding:10px 16px;
+    display:flex;align-items:center;gap:12px;
+    padding-top:calc(10px + env(safe-area-inset-top));
+  }
+  header h1{font-size:19px;text-transform:uppercase;flex:1}
+  header .who{font-size:12px;color:#9aa3b0;text-align:right;line-height:1.3}
+  main{padding:14px 14px 60px;max-width:900px;margin:0 auto}
+
+  /* ---------- вход ---------- */
+  #auth{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding:24px;max-width:420px;margin:0 auto}
+  #auth h1{font-size:34px;text-transform:uppercase;line-height:1}
+  #auth p{color:var(--steel);margin:8px 0 28px}
+  .stamp{
+    display:inline-block;border:2px solid var(--ink);padding:2px 8px;
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;transform:rotate(-1.5deg);margin-bottom:18px;
+  }
+
+  /* ---------- кнопки ---------- */
+  button{
+    font:500 15px/1 "IBM Plex Sans",sans-serif;
+    min-height:48px;padding:0 16px;border-radius:var(--r);
+    border:1px solid var(--ink);background:var(--card);color:var(--ink);
+    cursor:pointer;
+  }
+  button:hover{background:#f2f4f7}
+  button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+  button.primary{background:var(--signal);border-color:var(--ink);font-weight:600}
+  button.primary:hover{background:#ffdc4d}
+  button.ghost{border-color:var(--hair);color:var(--steel);min-height:38px;font-size:13px;padding:0 10px}
+  button.wide{width:100%}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ---------- сводка ---------- */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:18px}
+  .tile{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);padding:10px 12px}
+  .tile .n{font-family:Oswald,sans-serif;font-size:30px;line-height:1}
+  .tile .l{font-size:12px;color:var(--steel);text-transform:uppercase;letter-spacing:.06em}
+  .tile.hot{border-color:var(--alert)}
+  .tile.hot .n{color:var(--alert)}
+
+  /* ---------- секции ---------- */
+  section{margin-bottom:26px}
+  section > h2{
+    font-size:14px;text-transform:uppercase;letter-spacing:.12em;
+    border-bottom:2px solid var(--ink);padding-bottom:5px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:flex-end;
+  }
+  section > h2 span{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--steel);letter-spacing:0}
+
+  /* ---------- карточка заказа ---------- */
+  .ro{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+  .ro.urgent{border-left:4px solid var(--alert)}
+  .ro-head{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;cursor:pointer}
+  .ro-num{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--steel);padding-top:2px;min-width:44px}
+  .ro-main{flex:1;min-width:0}
+  .ro-name{font-weight:600;font-size:16px}
+  .ro-sub{font-size:13px;color:var(--steel);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chip{
+    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;padding:4px 7px;border-radius:2px;white-space:nowrap;
+    background:var(--paper);color:var(--steel);
+  }
+  .chip.wait{background:#fff3cd;color:#7a5b00}
+  .chip.hot{background:#fbe3e4;color:var(--alert)}
+  .chip.go{background:#e0f2e9;color:var(--ok)}
+
+  .ro-body{border-top:1px dashed var(--hair);padding:12px 14px;display:none}
+  .ro.open .ro-body{display:block}
+  .fact{display:flex;gap:8px;font-size:14px;padding:3px 0}
+  .fact b{color:var(--steel);font-weight:500;min-width:78px;font-size:13px}
+
+  /* ---------- запчасти ---------- */
+  .part{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px dotted var(--hair);font-size:14px}
+  .part:last-child{border-bottom:0}
+  .part .nm{flex:1;min-width:0}
+  .part .vd{font-size:12px;color:var(--steel)}
+  select{
+    font:400 14px "IBM Plex Sans",sans-serif;min-height:40px;padding:0 8px;
+    border:1px solid var(--hair);border-radius:var(--r);background:var(--card);color:var(--ink);
+  }
+  input[type=text],input[type=email],input[type=tel],textarea{
+    font:400 16px "IBM Plex Sans",sans-serif;width:100%;min-height:46px;padding:10px;
+    border:1px solid var(--hair);border-radius:var(--r);background:var(--card);color:var(--ink);
+  }
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--steel);margin-bottom:3px}
+
+  /* ---------- лог ---------- */
+  .log{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--steel);line-height:1.8;margin-top:10px}
+  .log div{border-left:2px solid var(--hair);padding-left:9px}
+
+  .empty{background:var(--card);border:1px dashed var(--hair);border-radius:var(--r);padding:22px;text-align:center;color:var(--steel);font-size:14px}
+  .hidden{display:none !important}
+  #toast{
+    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:11px 18px;border-radius:var(--r);
+    font-size:14px;z-index:50;max-width:90vw;
+  }
+  @media (prefers-reduced-motion:no-preference){#toast{animation:up .2s ease-out}}
+  @keyframes up{from{opacity:0;transform:translate(-50%,10px)}}
+</style>
+</head>
+<body>
+
+<!-- ================= ВХОД ================= -->
+<div id="auth">
+  <div class="stamp">Work orders</div>
+  <h1>Диспетчерская</h1>
+  <p>Заказы, механики, запчасти — в одном месте.</p>
+  <button id="btn-google" class="primary wide">Войти через Google</button>
+  <p id="auth-msg" style="margin-top:16px;font-size:14px"></p>
+</div>
+
+<!-- ================= ПРИЛОЖЕНИЕ ================= -->
+<div id="app" class="hidden">
+  <header>
+    <h1 id="hdr">Диспетчерская</h1>
+    <div class="who"><div id="who-name"></div><div id="who-role"></div></div>
+    <button class="ghost" id="btn-out" style="background:transparent;color:#9aa3b0;border-color:#3a4048">Выйти</button>
+  </header>
+  <main id="view"></main>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+/* ====== ВСТАВЬ СВОИ ДВА ЗНАЧЕНИЯ: Supabase → Settings → API ====== */
+const SUPABASE_URL  = 'https://yxcsuxolktzkvmzcmael.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_mhjLh_l1p8mblVkDTfJJtg_kRjM8y5N';
+/* ================================================================ */
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+const RO_STATUS = {
+  lead:'лид', scheduled:'записан', diagnosing:'диагностика', estimate:'смета',
+  approved:'одобрено', parts:'запчасти', repair:'ремонт', done:'сделано',
+  paid:'оплачен', cancelled:'отменён'
+};
+const PART_STATUS = {
+  needed:'нужна', ordered:'заказана', picked_up:'забрали',
+  installed:'установлена', return:'возврат'
+};
+// что механик жмёт дальше
+const NEXT = {
+  scheduled:['diagnosing','Приехал, начал'],
+  diagnosing:['estimate','Смета готова'],
+  approved:['repair','Начал ремонт'],
+  parts:['repair','Начал ремонт'],
+  repair:['done','Работа сделана']
+};
+
+let me = null, profile = null, mechanics = [], data = [];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function toast(t){
+  document.getElementById('toast')?.remove();
+  const d = document.createElement('div'); d.id='toast'; d.textContent=t;
+  document.body.appendChild(d); setTimeout(()=>d.remove(), 3200);
+}
+function mins(iso){ return Math.round((Date.now() - new Date(iso)) / 60000); }
+function waited(m){ return m < 60 ? m+' мин' : Math.floor(m/60)+' ч '+(m%60)+' мин'; }
+
+/* ================= ВХОД ================= */
+$('#btn-google').onclick = async () => {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{ redirectTo: window.location.origin }
+  });
+  if (error) $('#auth-msg').textContent = 'Не вышло войти: ' + error.message;
+};
+$('#btn-out').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+sb.auth.onAuthStateChange((_e, session) => { if (session?.user) start(session.user); });
+const { data:{ session } } = await sb.auth.getSession();
+if (session?.user) start(session.user);
+
+async function start(user){
+  if (me) return;
+  me = user;
+  const { data:p, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (error || !p){
+    $('#auth-msg').textContent = 'Доступ закрыт. Попроси добавить твою почту в список.';
+    await sb.auth.signOut();
+    return;
+  }
+  profile = p;
+  $('#auth').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  $('#who-name').textContent = p.full_name || user.email;
+  $('#who-role').textContent = { boss:'босс', dispatcher:'диспетчер', mechanic:'механик' }[p.role];
+  $('#hdr').textContent = p.role === 'mechanic' ? 'Мои заказы' : 'Диспетчерская';
+
+  if (p.role !== 'mechanic'){
+    const { data:m } = await sb.from('profiles').select('id,full_name').eq('role','mechanic').eq('active', true);
+    mechanics = m || [];
+  }
+  await load();
+  sb.channel('live')
+    .on('postgres_changes', { event:'*', schema:'public', table:'repair_orders' }, load)
+    .on('postgres_changes', { event:'*', schema:'public', table:'part_lines' }, load)
+    .subscribe();
+  setInterval(load, 60000);
+}
+
+/* ================= ДАННЫЕ ================= */
+async function load(){
+  const { data:rows, error } = await sb
+    .from('repair_orders')
+    .select(`id, ro_number, status, problem, address, scheduled_at, created_at, source, tech_id,
+             customers ( name, phone ),
+             vehicles ( year, make_model, plate ),
+             part_lines ( id, name, vendor, status, return_by ),
+             profiles!repair_orders_tech_id_fkey ( full_name )`)
+    .not('status','in','(paid,cancelled)')
+    .order('created_at', { ascending:true });
+  if (error){ toast('Не удалось загрузить: ' + error.message); return; }
+  data = rows || [];
+  render();
+}
+
+/* ================= ЭКРАНЫ ================= */
+function render(){
+  const open = new Set([...document.querySelectorAll('.ro.open')].map(e => e.dataset.id));
+  $('#view').innerHTML = profile.role === 'mechanic' ? viewMechanic() : viewDispatcher();
+  open.forEach(id => document.querySelector(`.ro[data-id="${id}"]`)?.classList.add('open'));
+  wire();
+}
+
+function viewMechanic(){
+  const mine = data.filter(r => r.tech_id === me.id);
+  if (!mine.length) return `<div class="empty">Пока ничего не назначено.</div>`;
+  return `<section><h2>Сегодня <span>${mine.length}</span></h2>${mine.map(card).join('')}</section>`;
+}
+
+function viewDispatcher(){
+  const leads   = data.filter(r => r.status === 'lead');
+  const active  = data.filter(r => r.status !== 'lead');
+  const noTech  = active.filter(r => !r.tech_id).length;
+  const stuck   = data.flatMap(r => r.part_lines || []).filter(p => p.status === 'ordered').length;
+  const back    = data.flatMap(r => r.part_lines || []).filter(p => p.status === 'return').length;
+  const late    = leads.filter(r => mins(r.created_at) > 15).length;
+
+  return `
+  <div class="tiles">
+    <div class="tile ${late?'hot':''}"><div class="n">${leads.length}</div><div class="l">Лиды${late?' · '+late+' горят':''}</div></div>
+    <div class="tile"><div class="n">${active.length}</div><div class="l">В работе</div></div>
+    <div class="tile ${stuck?'hot':''}"><div class="n">${stuck}</div><div class="l">Не забрали</div></div>
+    <div class="tile ${back?'hot':''}"><div class="n">${back}</div><div class="l">Возвраты</div></div>
+  </div>
+
+  <section>
+    <h2>Новые лиды <span>${leads.length}</span></h2>
+    ${leads.length ? leads.map(card).join('') : '<div class="empty">Новых нет.</div>'}
+    <button class="ghost" id="btn-new" style="margin-top:8px">+ Записать лид вручную</button>
+    <div id="new-form" class="hidden" style="background:var(--card);border:1px solid var(--hair);border-radius:var(--r);padding:14px;margin-top:8px">
+      <div class="field"><label>Имя клиента</label><input type="text" id="f-name"></div>
+      <div class="field"><label>Телефон</label><input type="tel" id="f-phone"></div>
+      <div class="field"><label>Машина</label><input type="text" id="f-car" placeholder="2018 Ford Transit"></div>
+      <div class="field"><label>Что случилось</label><textarea id="f-problem" rows="2"></textarea></div>
+      <div class="field"><label>Адрес</label><input type="text" id="f-addr"></div>
+      <div class="field"><label>Откуда</label>
+        <select id="f-src"><option>звонок</option><option>Yelp</option><option>Thumbtack</option><option>сарафан</option></select>
+      </div>
+      <button class="primary wide" id="btn-save">Создать заказ</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>В работе <span>${noTech ? noTech + ' без механика' : active.length}</span></h2>
+    ${active.length ? active.map(card).join('') : '<div class="empty">Пусто.</div>'}
+  </section>`;
+}
+
+/* ================= КАРТОЧКА ================= */
+function card(r){
+  const c = r.customers || {}, v = r.vehicles || {};
+  const lead = r.status === 'lead';
+  const w = mins(r.created_at);
+  const urgent = lead && w > 15;
+  const parts = r.part_lines || [];
+  const hotPart = parts.some(p => p.status === 'ordered' || p.status === 'return');
+
+  const chip = lead
+    ? `<span class="chip ${urgent?'hot':'wait'}">${waited(w)}</span>`
+    : `<span class="chip ${hotPart?'wait':'go'}">${RO_STATUS[r.status]}</span>`;
+
+  return `
+  <div class="ro ${urgent?'urgent':''}" data-id="${r.id}">
+    <div class="ro-head js-toggle">
+      <div class="ro-num">#${r.ro_number}</div>
+      <div class="ro-main">
+        <div class="ro-name">${esc(c.name) || 'Без имени'}</div>
+        <div class="ro-sub">${esc([v.year, v.make_model].filter(Boolean).join(' ')) || 'машина не указана'} · ${esc(r.problem) || '—'}</div>
+      </div>
+      ${chip}
+    </div>
+    <div class="ro-body">
+      ${c.phone ? `<div class="fact"><b>Телефон</b><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div>` : ''}
+      ${r.address ? `<div class="fact"><b>Адрес</b><a href="https://maps.google.com/?q=${encodeURIComponent(r.address)}" target="_blank" rel="noopener">${esc(r.address)}</a></div>` : ''}
+      <div class="fact"><b>Механик</b>${esc(r.profiles?.full_name) || 'не назначен'}</div>
+      ${r.source ? `<div class="fact"><b>Откуда</b>${esc(r.source)}</div>` : ''}
+
+      ${parts.length ? `<div style="margin-top:12px"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--steel)">Запчасти</b>
+        ${parts.map(p => `
+          <div class="part">
+            <div class="nm">${esc(p.name)}<div class="vd">${esc(p.vendor) || '—'}${p.return_by ? ' · вернуть до ' + p.return_by : ''}</div></div>
+            <select class="js-part" data-part="${p.id}">
+              ${Object.entries(PART_STATUS).map(([k,l]) => `<option value="${k}" ${p.status===k?'selected':''}>${l}</option>`).join('')}
+            </select>
+          </div>`).join('')}
+      </div>` : ''}
+
+      <div class="row" style="margin-top:14px">
+        ${NEXT[r.status] ? `<button class="primary js-next" data-id="${r.id}" data-to="${NEXT[r.status][0]}">${NEXT[r.status][1]}</button>` : ''}
+        ${profile.role !== 'mechanic' ? `
+          <select class="js-tech" data-id="${r.id}">
+            <option value="">— механик —</option>
+            ${mechanics.map(m => `<option value="${m.id}" ${r.tech_id===m.id?'selected':''}>${esc(m.full_name)}</option>`).join('')}
+          </select>
+          <select class="js-status" data-id="${r.id}">
+            ${Object.entries(RO_STATUS).map(([k,l]) => `<option value="${k}" ${r.status===k?'selected':''}>${l}</option>`).join('')}
+          </select>
+          <button class="ghost js-part-add" data-id="${r.id}">+ запчасть</button>` : ''}
+        ${c.phone ? `<a href="sms:${esc(c.phone)}"><button class="ghost">SMS</button></a>` : ''}
+      </div>
+      <div class="log" data-log="${r.id}"></div>
+    </div>
+  </div>`;
+}
+
+/* ================= ДЕЙСТВИЯ ================= */
+function wire(){
+  document.querySelectorAll('.js-toggle').forEach(el => el.onclick = e => {
+    const ro = el.closest('.ro');
+    ro.classList.toggle('open');
+    if (ro.classList.contains('open')) showLog(ro.dataset.id);
+  });
+
+  document.querySelectorAll('.js-next').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    await upd(b.dataset.id, { status: b.dataset.to });
+  });
+
+  document.querySelectorAll('.js-status').forEach(s => s.onchange = async e => {
+    e.stopPropagation();
+    await upd(s.dataset.id, { status: s.value });
+  });
+
+  document.querySelectorAll('.js-tech').forEach(s => s.onchange = async e => {
+    e.stopPropagation();
+    const patch = { tech_id: s.value || null };
+    const ro = data.find(r => r.id === s.dataset.id);
+    if (s.value && ro.status === 'lead') patch.status = 'scheduled';
+    await upd(s.dataset.id, patch);
+  });
+
+  document.querySelectorAll('.js-part').forEach(s => s.onchange = async e => {
+    e.stopPropagation();
+    const { error } = await sb.from('part_lines').update({ status: s.value }).eq('id', s.dataset.part);
+    toast(error ? 'Не сохранилось: ' + error.message : 'Запчасть обновлена');
+    if (!error) load();
+  });
+
+  document.querySelectorAll('.js-part-add').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    const name = prompt('Что за запчасть?'); if (!name) return;
+    const vendor = prompt('Где берём?') || null;
+    const { error } = await sb.from('part_lines').insert({ ro_id: b.dataset.id, name, vendor });
+    toast(error ? 'Не добавилось: ' + error.message : 'Запчасть добавлена');
+    if (!error) load();
+  });
+
+  const nb = $('#btn-new');
+  if (nb) nb.onclick = () => $('#new-form').classList.toggle('hidden');
+  const sv = $('#btn-save');
+  if (sv) sv.onclick = createLead;
+}
+
+async function upd(id, patch){
+  const { error } = await sb.from('repair_orders').update(patch).eq('id', id);
+  toast(error ? 'Не сохранилось: ' + error.message : 'Готово');
+  if (!error) load();
+}
+
+async function showLog(roId){
+  const box = document.querySelector(`[data-log="${roId}"]`);
+  if (!box || box.dataset.done) return;
+  const { data:ev } = await sb.from('event_log').select('action, details, at').eq('ro_id', roId).order('at', { ascending:false }).limit(12);
+  box.dataset.done = 1;
+  box.innerHTML = (ev || []).map(e => {
+    const d = e.details || {};
+    const arrow = d.na ? ` ${d.c ?? ''} → ${d.na}` : '';
+    return `<div>${new Date(e.at).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} · ${esc(e.action)}${esc(arrow)}</div>`;
+  }).join('') || '<div>Событий пока нет.</div>';
+}
+
+async function createLead(){
+  const name = $('#f-name').value.trim();
+  if (!name){ toast('Впиши имя клиента'); return; }
+  const { data:c, error:e1 } = await sb.from('customers')
+    .insert({ name, phone: $('#f-phone').value.trim() || null, address: $('#f-addr').value.trim() || null, source: $('#f-src').value })
+    .select().single();
+  if (e1){ toast('Клиент не создался: ' + e1.message); return; }
+
+  let vid = null;
+  const car = $('#f-car').value.trim();
+  if (car){
+    const { data:v } = await sb.from('vehicles').insert({ customer_id: c.id, make_model: car }).select().single();
+    vid = v?.id ?? null;
+  }
+  const { error:e3 } = await sb.from('repair_orders').insert({
+    customer_id: c.id, vehicle_id: vid,
+    problem: $('#f-problem').value.trim() || null,
+    address: $('#f-addr').value.trim() || null,
+    source: $('#f-src').value
+  });
+  if (e3){ toast('Заказ не создался: ' + e3.message); return; }
+  ['#f-name','#f-phone','#f-car','#f-problem','#f-addr'].forEach(s => $(s).value = '');
+  $('#new-form').classList.add('hidden');
+  toast('Заказ создан');
+  load();
+}
+</script>
+</body>
+</html>
