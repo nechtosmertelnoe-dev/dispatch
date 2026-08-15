@@ -17,6 +17,7 @@
   body{background:var(--paper);color:var(--ink);
     font:400 16px/1.45 "IBM Plex Sans",system-ui,sans-serif;-webkit-text-size-adjust:100%}
   h1,h2,h3{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.02em;margin:0}
+  a{color:var(--blue)}
 
   header{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;
     padding:10px 16px;display:flex;align-items:center;gap:12px;
@@ -42,7 +43,7 @@
   button.primary:hover{background:#ffdc4d}
   button.ghost{border-color:var(--hair);color:var(--steel);min-height:38px;font-size:13px;padding:0 10px}
   button.wide{width:100%}
-  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
   .tabs{display:flex;border-bottom:2px solid var(--ink);margin-bottom:16px}
   .tabs button{border:0;background:transparent;min-height:42px;padding:0 18px;
@@ -85,10 +86,13 @@
   .fact{display:flex;gap:8px;font-size:14px;padding:3px 0}
   .fact b{color:var(--steel);font-weight:500;min-width:78px;font-size:13px}
 
-  .part{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px dotted var(--hair);font-size:14px}
+  .part{padding:9px 0;border-bottom:1px dotted var(--hair);font-size:14px}
   .part:last-child{border-bottom:0}
-  .part .nm{flex:1;min-width:0}
-  .part .vd{font-size:12px;color:var(--steel)}
+  .part .top{display:flex;gap:8px;align-items:center}
+  .part .nm{flex:1;min-width:0;font-weight:500}
+  .part .vd{font-size:12px;color:var(--steel);margin-top:2px}
+  .part .acts{margin-top:6px}
+
   select{font:400 14px "IBM Plex Sans",sans-serif;min-height:40px;padding:0 8px;
     border:1px solid var(--hair);border-radius:var(--r);background:var(--card);color:var(--ink)}
   input[type=text],input[type=tel],textarea{font:400 16px "IBM Plex Sans",sans-serif;
@@ -113,7 +117,6 @@
   .mech-jobs{margin-top:10px;font-size:13px;color:var(--steel);line-height:1.7}
   .mech-jobs b{color:var(--ink);font-weight:500}
 
-  /* тумблер геолокации у механика */
   .geo{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
     padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
   .geo .t{flex:1;min-width:0}
@@ -125,6 +128,12 @@
     background:#fff;transition:left .15s}
   .sw.on{background:var(--ok)}
   .sw.on i{left:25px}
+
+  /* заехать за запчастями */
+  .stop{background:var(--card);border:1px solid var(--hair);border-left:4px solid var(--signal);
+    border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+  .stop .sn{font-weight:600;font-size:15px}
+  .stop .sa{font-size:13px;color:var(--steel);margin:3px 0 8px}
 
   .empty{background:var(--card);border:1px dashed var(--hair);border-radius:var(--r);
     padding:22px;text-align:center;color:var(--steel);font-size:14px}
@@ -180,14 +189,15 @@ const NEXT = {
   repair:['done','Работа сделана']
 };
 const LOAD_MAX = 4;
-const LIVE_MIN = 20;          // сколько минут координаты считаются свежими
+const LIVE_MIN = 20;
 const GEO_KEY = 'share-geo';
 
-let me = null, profile = null, mechanics = [], data = [], geo = {}, tab = 'orders';
+let me = null, profile = null, mechanics = [], vendors = [], data = [], geo = {}, tab = 'orders';
 let watchId = null, lastSent = 0;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mapUrl = q => 'https://maps.google.com/?q=' + encodeURIComponent(q);
 
 function toast(t){
   document.getElementById('toast')?.remove();
@@ -204,7 +214,6 @@ function km(a, b){
   const h = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
   return Math.round(2 * R * Math.asin(Math.sqrt(h)));
 }
-// живая точка механика, если свежая; иначе его база
 function where(m){
   if (m.last_lat && m.last_seen && mins(m.last_seen) <= LIVE_MIN)
     return { lat:m.last_lat, lng:m.last_lng, live:true };
@@ -222,17 +231,13 @@ function geoStart(){
   if (!navigator.geolocation){ toast('Телефон не отдаёт геолокацию'); return false; }
   watchId = navigator.geolocation.watchPosition(
     async pos => {
-      if (Date.now() - lastSent < 60000) return;   // не чаще раза в минуту
+      if (Date.now() - lastSent < 60000) return;
       lastSent = Date.now();
-      await sb.rpc('set_my_location', {
-        lat: pos.coords.latitude, lng: pos.coords.longitude
-      });
+      await sb.rpc('set_my_location', { lat: pos.coords.latitude, lng: pos.coords.longitude });
     },
     err => {
       toast(err.code === 1 ? 'Доступ к геолокации запрещён' : 'Не удалось определить место');
-      geoStop();
-      localStorage.removeItem(GEO_KEY);
-      render();
+      geoStop(); localStorage.removeItem(GEO_KEY); render();
     },
     { enableHighAccuracy:true, maximumAge:30000, timeout:20000 }
   );
@@ -273,8 +278,12 @@ async function start(user){
   $('#who-role').textContent = { boss:'босс', dispatcher:'диспетчер', mechanic:'механик' }[p.role];
   $('#hdr').textContent = p.role === 'mechanic' ? 'Мои заказы' : 'Диспетчерская';
 
-  const { data:g } = await sb.from('zip_geo').select('*');
+  const [{ data:g }, { data:vd }] = await Promise.all([
+    sb.from('zip_geo').select('*'),
+    sb.from('vendors').select('*').eq('active', true).order('name'),
+  ]);
   for (const z of (g || [])) geo[z.zip] = z;
+  vendors = vd || [];
 
   if (p.role !== 'mechanic') await loadCrew();
   if (p.role === 'mechanic' && localStorage.getItem(GEO_KEY) === '1') geoStart();
@@ -306,7 +315,8 @@ async function load(){
     .select(`id, ro_number, status, problem, address, zip, scheduled_at, created_at, source, tech_id,
              customers ( name, phone ),
              vehicles ( year, make_model, plate ),
-             part_lines ( id, name, vendor, status, return_by ),
+             part_lines ( id, name, vendor, vendor_id, status, return_by,
+                          vendors ( name, address, phone ) ),
              profiles!repair_orders_tech_id_fkey ( full_name )`)
     .not('status','in','(paid,cancelled)')
     .order('created_at', { ascending:true });
@@ -332,9 +342,18 @@ function tabsHtml(){
   </div>`;
 }
 
+// магазин запчасти: справочник или старый текст
+function shopOf(p){
+  const v = p.vendors;
+  if (v) return { name: v.name, address: v.address || '', phone: v.phone || '' };
+  if (p.vendor) return { name: p.vendor, address: '', phone: '' };
+  return null;
+}
+
 function viewMechanic(){
   const on = localStorage.getItem(GEO_KEY) === '1';
   const mine = data.filter(r => r.tech_id === me.id);
+
   const geoBox = `
     <div class="geo">
       <div class="t">
@@ -343,10 +362,36 @@ function viewMechanic(){
       </div>
       <button class="sw ${on?'on':''}" id="js-geo" aria-label="Делиться геолокацией"><i></i></button>
     </div>`;
+
+  // что надо забрать по пути
+  const toGet = [];
+  for (const r of mine)
+    for (const p of (r.part_lines || []))
+      if (p.status === 'ordered' || p.status === 'needed') toGet.push({ r, p });
+
+  const stops = toGet.length ? `
+    <section>
+      <h2>Заехать по пути <span>${toGet.length}</span></h2>
+      ${toGet.map(({r,p}) => {
+        const s = shopOf(p);
+        return `<div class="stop">
+          <div class="sn">${esc(p.name)} <span class="chip ${p.status==='ordered'?'wait':''}">${PART_STATUS[p.status]}</span></div>
+          <div class="sa">Для заказа #${r.ro_number} · ${esc(r.customers?.name) || ''}</div>
+          ${s ? `<div class="sa"><b>${esc(s.name)}</b>${s.address ? ' · ' + esc(s.address) : ' · адрес не указан'}</div>` : '<div class="sa">Магазин не выбран</div>'}
+          <div class="row">
+            ${s?.address ? `<a href="${mapUrl(s.address)}" target="_blank" rel="noopener"><button class="ghost">Маршрут</button></a>` : ''}
+            ${s?.phone ? `<a href="tel:${esc(s.phone)}"><button class="ghost">Позвонить</button></a>` : ''}
+            <button class="primary js-got" data-part="${p.id}">Забрал</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </section>` : '';
+
   const body = mine.length
     ? `<section><h2>Сегодня <span>${mine.length}</span></h2>${mine.map(card).join('')}</section>`
     : `<div class="empty">Пока ничего не назначено.</div>`;
-  return geoBox + body;
+
+  return geoBox + stops + body;
 }
 
 function viewCrew(){
@@ -445,6 +490,34 @@ function viewDispatcher(){
   </section>`;
 }
 
+function partRow(p){
+  const s = shopOf(p);
+  const isMech = profile.role === 'mechanic';
+  return `<div class="part">
+    <div class="top">
+      <div class="nm">${esc(p.name)}</div>
+      ${isMech
+        ? `<span class="chip ${p.status==='ordered'?'wait':(p.status==='return'?'hot':'')}">${PART_STATUS[p.status]}</span>`
+        : `<select class="js-part" data-part="${p.id}">
+             ${Object.entries(PART_STATUS).map(([k,l]) => `<option value="${k}" ${p.status===k?'selected':''}>${l}</option>`).join('')}
+           </select>`}
+    </div>
+    <div class="vd">${s ? esc(s.name) + (s.address ? ' · ' + esc(s.address) : '') : 'магазин не выбран'}${p.return_by ? ' · вернуть до ' + p.return_by : ''}</div>
+    <div class="row acts">
+      ${s?.address ? `<a href="${mapUrl(s.address)}" target="_blank" rel="noopener"><button class="ghost">Маршрут</button></a>` : ''}
+      ${s?.phone ? `<a href="tel:${esc(s.phone)}"><button class="ghost">Позвонить</button></a>` : ''}
+      ${isMech && p.status !== 'picked_up' && p.status !== 'installed'
+        ? `<button class="ghost js-got" data-part="${p.id}">Забрал</button>` : ''}
+      ${isMech && p.status === 'picked_up'
+        ? `<button class="ghost js-installed" data-part="${p.id}">Поставил</button>` : ''}
+      ${!isMech ? `<select class="js-vendor" data-part="${p.id}">
+          <option value="">— магазин —</option>
+          ${vendors.map(v => `<option value="${v.id}" ${p.vendor_id===v.id?'selected':''}>${esc(v.name)}</option>`).join('')}
+        </select>` : ''}
+    </div>
+  </div>`;
+}
+
 function card(r){
   const c = r.customers || {}, v = r.vehicles || {};
   const lead = r.status === 'lead';
@@ -472,18 +545,13 @@ function card(r){
     </div>
     <div class="ro-body">
       ${c.phone ? `<div class="fact"><b>Телефон</b><a href="tel:${esc(c.phone)}">${esc(c.phone)}</a></div>` : ''}
-      ${r.address ? `<div class="fact"><b>Адрес</b><a href="https://maps.google.com/?q=${encodeURIComponent(r.address)}" target="_blank" rel="noopener">${esc(r.address)}</a></div>` : ''}
+      ${r.address ? `<div class="fact"><b>Адрес</b><a href="${mapUrl(r.address)}" target="_blank" rel="noopener">${esc(r.address)}</a></div>` : ''}
       <div class="fact"><b>Механик</b>${esc(r.profiles?.full_name) || 'не назначен'}</div>
       ${r.source ? `<div class="fact"><b>Откуда</b>${esc(r.source)}</div>` : ''}
 
-      ${parts.length ? `<div style="margin-top:12px"><b style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--steel)">Запчасти</b>
-        ${parts.map(p => `
-          <div class="part">
-            <div class="nm">${esc(p.name)}<div class="vd">${esc(p.vendor) || '—'}${p.return_by ? ' · вернуть до ' + p.return_by : ''}</div></div>
-            <select class="js-part" data-part="${p.id}">
-              ${Object.entries(PART_STATUS).map(([k,l]) => `<option value="${k}" ${p.status===k?'selected':''}>${l}</option>`).join('')}
-            </select>
-          </div>`).join('')}
+      ${parts.length ? `<div style="margin-top:12px">
+        <b style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--steel)">Запчасти</b>
+        ${parts.map(partRow).join('')}
       </div>` : ''}
 
       <div class="row" style="margin-top:14px">
@@ -513,21 +581,14 @@ function card(r){
 
 /* ================= ДЕЙСТВИЯ ================= */
 function wire(){
-  document.querySelectorAll('.js-tab').forEach(b => b.onclick = () => {
-    tab = b.dataset.tab; render();
-  });
+  document.querySelectorAll('.js-tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); });
 
   const gb = $('#js-geo');
   if (gb) gb.onclick = () => {
     if (localStorage.getItem(GEO_KEY) === '1'){
-      geoStop();
-      localStorage.removeItem(GEO_KEY);
-      toast('Больше не показываю');
-    } else {
-      if (geoStart()){
-        localStorage.setItem(GEO_KEY, '1');
-        toast('Показываю, пока страница открыта');
-      }
+      geoStop(); localStorage.removeItem(GEO_KEY); toast('Больше не показываю');
+    } else if (geoStart()){
+      localStorage.setItem(GEO_KEY, '1'); toast('Показываю, пока страница открыта');
     }
     render();
   };
@@ -558,17 +619,29 @@ function wire(){
 
   document.querySelectorAll('.js-part').forEach(s => s.onchange = async e => {
     e.stopPropagation();
-    const { error } = await sb.from('part_lines').update({ status: s.value }).eq('id', s.dataset.part);
-    toast(error ? 'Не сохранилось: ' + error.message : 'Запчасть обновлена');
-    if (!error) load();
+    await part(s.dataset.part, { status: s.value }, 'Запчасть обновлена');
+  });
+
+  document.querySelectorAll('.js-vendor').forEach(s => s.onchange = async e => {
+    e.stopPropagation();
+    await part(s.dataset.part, { vendor_id: s.value || null }, 'Магазин выбран');
+  });
+
+  document.querySelectorAll('.js-got').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    await part(b.dataset.part, { status:'picked_up', picked_up_by: me.id }, 'Отмечено: забрал');
+  });
+
+  document.querySelectorAll('.js-installed').forEach(b => b.onclick = async e => {
+    e.stopPropagation();
+    await part(b.dataset.part, { status:'installed' }, 'Отмечено: поставил');
   });
 
   document.querySelectorAll('.js-part-add').forEach(b => b.onclick = async e => {
     e.stopPropagation();
     const name = prompt('Что за запчасть?'); if (!name) return;
-    const vendor = prompt('Где берём?') || null;
-    const { error } = await sb.from('part_lines').insert({ ro_id: b.dataset.id, name, vendor });
-    toast(error ? 'Не добавилось: ' + error.message : 'Запчасть добавлена');
+    const { error } = await sb.from('part_lines').insert({ ro_id: b.dataset.id, name });
+    toast(error ? 'Не добавилось: ' + error.message : 'Добавлено, выбери магазин');
     if (!error) load();
   });
 
@@ -576,6 +649,12 @@ function wire(){
   if (nb) nb.onclick = () => $('#new-form').classList.toggle('hidden');
   const sv = $('#btn-save');
   if (sv) sv.onclick = createLead;
+}
+
+async function part(id, patch, okMsg){
+  const { error } = await sb.from('part_lines').update(patch).eq('id', id);
+  toast(error ? 'Не сохранилось: ' + error.message : okMsg);
+  if (!error) load();
 }
 
 async function upd(id, patch){
