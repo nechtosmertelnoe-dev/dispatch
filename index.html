@@ -9,57 +9,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#16181d;
-    --steel:#5b6472;
-    --hair:#c9ced6;
-    --paper:#e7eaee;
-    --card:#fff;
-    --signal:#ffd21f;
-    --alert:#c8262b;
-    --ok:#15794a;
-    --blue:#1f5f8b;
-    --r:4px;
+    --ink:#16181d; --steel:#5b6472; --hair:#c9ced6; --paper:#e7eaee; --card:#fff;
+    --signal:#ffd21f; --alert:#c8262b; --ok:#15794a; --blue:#1f5f8b; --r:4px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font:400 16px/1.45 "IBM Plex Sans",system-ui,sans-serif;
-    -webkit-text-size-adjust:100%;
-  }
+  body{background:var(--paper);color:var(--ink);
+    font:400 16px/1.45 "IBM Plex Sans",system-ui,sans-serif;-webkit-text-size-adjust:100%}
   h1,h2,h3{font-family:Oswald,sans-serif;font-weight:600;letter-spacing:.02em;margin:0}
-  .mono{font-family:"IBM Plex Mono",monospace;font-weight:500}
 
-  /* ---------- каркас ---------- */
-  header{
-    position:sticky;top:0;z-index:20;
-    background:var(--ink);color:#fff;
-    padding:10px 16px;
-    display:flex;align-items:center;gap:12px;
-    padding-top:calc(10px + env(safe-area-inset-top));
-  }
+  header{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;
+    padding:10px 16px;display:flex;align-items:center;gap:12px;
+    padding-top:calc(10px + env(safe-area-inset-top))}
   header h1{font-size:19px;text-transform:uppercase;flex:1}
   header .who{font-size:12px;color:#9aa3b0;text-align:right;line-height:1.3}
   main{padding:14px 14px 60px;max-width:900px;margin:0 auto}
 
-  /* ---------- вход ---------- */
-  #auth{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding:24px;max-width:420px;margin:0 auto}
+  #auth{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;
+    padding:24px;max-width:420px;margin:0 auto}
   #auth h1{font-size:34px;text-transform:uppercase;line-height:1}
   #auth p{color:var(--steel);margin:8px 0 28px}
-  .stamp{
-    display:inline-block;border:2px solid var(--ink);padding:2px 8px;
+  .stamp{display:inline-block;border:2px solid var(--ink);padding:2px 8px;
     font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;
-    text-transform:uppercase;transform:rotate(-1.5deg);margin-bottom:18px;
-  }
+    text-transform:uppercase;transform:rotate(-1.5deg);margin-bottom:18px}
 
-  /* ---------- кнопки ---------- */
-  button{
-    font:500 15px/1 "IBM Plex Sans",sans-serif;
-    min-height:48px;padding:0 16px;border-radius:var(--r);
-    border:1px solid var(--ink);background:var(--card);color:var(--ink);
-    cursor:pointer;
-  }
+  button{font:500 15px/1 "IBM Plex Sans",sans-serif;min-height:48px;padding:0 16px;
+    border-radius:var(--r);border:1px solid var(--ink);background:var(--card);
+    color:var(--ink);cursor:pointer}
   button:hover{background:#f2f4f7}
   button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
   button.primary{background:var(--signal);border-color:var(--ink);font-weight:600}
@@ -68,7 +44,14 @@
   button.wide{width:100%}
   .row{display:flex;gap:8px;flex-wrap:wrap}
 
-  /* ---------- сводка ---------- */
+  .tabs{display:flex;border-bottom:2px solid var(--ink);margin-bottom:16px}
+  .tabs button{border:0;background:transparent;min-height:42px;padding:0 18px;
+    font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--steel);
+    border-radius:0;font-weight:500}
+  .tabs button.on{background:var(--ink);color:#fff}
+  .tabs button:hover{background:#dfe3e8}
+  .tabs button.on:hover{background:var(--ink)}
+
   .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:18px}
   .tile{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);padding:10px 12px}
   .tile .n{font-family:Oswald,sans-serif;font-size:30px;line-height:1}
@@ -76,16 +59,12 @@
   .tile.hot{border-color:var(--alert)}
   .tile.hot .n{color:var(--alert)}
 
-  /* ---------- секции ---------- */
   section{margin-bottom:26px}
-  section > h2{
-    font-size:14px;text-transform:uppercase;letter-spacing:.12em;
+  section > h2{font-size:14px;text-transform:uppercase;letter-spacing:.12em;
     border-bottom:2px solid var(--ink);padding-bottom:5px;margin-bottom:10px;
-    display:flex;justify-content:space-between;align-items:flex-end;
-  }
+    display:flex;justify-content:space-between;align-items:flex-end}
   section > h2 span{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--steel);letter-spacing:0}
 
-  /* ---------- карточка заказа ---------- */
   .ro{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
   .ro.urgent{border-left:4px solid var(--alert)}
   .ro-head{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;cursor:pointer}
@@ -93,11 +72,9 @@
   .ro-main{flex:1;min-width:0}
   .ro-name{font-weight:600;font-size:16px}
   .ro-sub{font-size:13px;color:var(--steel);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .chip{
-    font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;
     text-transform:uppercase;padding:4px 7px;border-radius:2px;white-space:nowrap;
-    background:var(--paper);color:var(--steel);
-  }
+    background:var(--paper);color:var(--steel)}
   .chip.wait{background:#fff3cd;color:#7a5b00}
   .chip.hot{background:#fbe3e4;color:var(--alert)}
   .chip.go{background:#e0f2e9;color:var(--ok)}
@@ -107,40 +84,46 @@
   .fact{display:flex;gap:8px;font-size:14px;padding:3px 0}
   .fact b{color:var(--steel);font-weight:500;min-width:78px;font-size:13px}
 
-  /* ---------- запчасти ---------- */
   .part{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px dotted var(--hair);font-size:14px}
   .part:last-child{border-bottom:0}
   .part .nm{flex:1;min-width:0}
   .part .vd{font-size:12px;color:var(--steel)}
-  select{
-    font:400 14px "IBM Plex Sans",sans-serif;min-height:40px;padding:0 8px;
-    border:1px solid var(--hair);border-radius:var(--r);background:var(--card);color:var(--ink);
-  }
-  input[type=text],input[type=email],input[type=tel],textarea{
-    font:400 16px "IBM Plex Sans",sans-serif;width:100%;min-height:46px;padding:10px;
-    border:1px solid var(--hair);border-radius:var(--r);background:var(--card);color:var(--ink);
-  }
+  select{font:400 14px "IBM Plex Sans",sans-serif;min-height:40px;padding:0 8px;
+    border:1px solid var(--hair);border-radius:var(--r);background:var(--card);color:var(--ink)}
+  input[type=text],input[type=tel],textarea{font:400 16px "IBM Plex Sans",sans-serif;
+    width:100%;min-height:46px;padding:10px;border:1px solid var(--hair);
+    border-radius:var(--r);background:var(--card);color:var(--ink)}
   .field{margin-bottom:10px}
-  .field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--steel);margin-bottom:3px}
+  .field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--steel);margin-bottom:3px}
 
-  /* ---------- лог ---------- */
   .log{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--steel);line-height:1.8;margin-top:10px}
   .log div{border-left:2px solid var(--hair);padding-left:9px}
 
-  .empty{background:var(--card);border:1px dashed var(--hair);border-radius:var(--r);padding:22px;text-align:center;color:var(--steel);font-size:14px}
+  .mech{background:var(--card);border:1px solid var(--hair);border-radius:var(--r);
+    padding:12px 14px;margin-bottom:8px}
+  .mech.free{border-left:4px solid var(--ok)}
+  .mech.busy{border-left:4px solid var(--signal)}
+  .mech.over{border-left:4px solid var(--alert)}
+  .mech-top{display:flex;align-items:center;gap:8px}
+  .mech-name{font-weight:600;font-size:16px;flex:1;min-width:0}
+  .bar{height:6px;background:var(--paper);border-radius:3px;margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--ink)}
+  .mech-jobs{margin-top:10px;font-size:13px;color:var(--steel);line-height:1.7}
+  .mech-jobs b{color:var(--ink);font-weight:500}
+
+  .empty{background:var(--card);border:1px dashed var(--hair);border-radius:var(--r);
+    padding:22px;text-align:center;color:var(--steel);font-size:14px}
   .hidden{display:none !important}
-  #toast{
-    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+  #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
     background:var(--ink);color:#fff;padding:11px 18px;border-radius:var(--r);
-    font-size:14px;z-index:50;max-width:90vw;
-  }
+    font-size:14px;z-index:50;max-width:90vw}
   @media (prefers-reduced-motion:no-preference){#toast{animation:up .2s ease-out}}
   @keyframes up{from{opacity:0;transform:translate(-50%,10px)}}
 </style>
 </head>
 <body>
 
-<!-- ================= ВХОД ================= -->
 <div id="auth">
   <div class="stamp">Work orders</div>
   <h1>Диспетчерская</h1>
@@ -149,7 +132,6 @@
   <p id="auth-msg" style="margin-top:16px;font-size:14px"></p>
 </div>
 
-<!-- ================= ПРИЛОЖЕНИЕ ================= -->
 <div id="app" class="hidden">
   <header>
     <h1 id="hdr">Диспетчерская</h1>
@@ -162,10 +144,8 @@
 <script type="module">
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-/* ====== ВСТАВЬ СВОИ ДВА ЗНАЧЕНИЯ: Supabase → Settings → API ====== */
 const SUPABASE_URL  = 'https://yxcsuxolktzkvmzcmael.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_mhjLh_l1p8mblVkDTfJJtg_kRjM8y5N';
-/* ================================================================ */
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -178,7 +158,6 @@ const PART_STATUS = {
   needed:'нужна', ordered:'заказана', picked_up:'забрали',
   installed:'установлена', return:'возврат'
 };
-// что механик жмёт дальше
 const NEXT = {
   scheduled:['diagnosing','Приехал, начал'],
   diagnosing:['estimate','Смета готова'],
@@ -186,8 +165,9 @@ const NEXT = {
   parts:['repair','Начал ремонт'],
   repair:['done','Работа сделана']
 };
+const LOAD_MAX = 4;
 
-let me = null, profile = null, mechanics = [], data = [];
+let me = null, profile = null, mechanics = [], data = [], geo = {}, tab = 'orders';
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -196,10 +176,18 @@ function toast(t){
   const d = document.createElement('div'); d.id='toast'; d.textContent=t;
   document.body.appendChild(d); setTimeout(()=>d.remove(), 3200);
 }
-function mins(iso){ return Math.round((Date.now() - new Date(iso)) / 60000); }
-function waited(m){ return m < 60 ? m+' мин' : Math.floor(m/60)+' ч '+(m%60)+' мин'; }
+const mins = iso => Math.round((Date.now() - new Date(iso)) / 60000);
+const waited = m => m < 60 ? m+' мин' : Math.floor(m/60)+' ч '+(m%60)+' мин';
 
-/* ================= ВХОД ================= */
+function km(a, b){
+  if (!a || !b) return null;
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLng/2)**2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(h)));
+}
+const distTo = (m, r) => (m.base_zip && r.zip) ? km(geo[m.base_zip], geo[r.zip]) : null;
+
 $('#btn-google').onclick = async () => {
   const { error } = await sb.auth.signInWithOAuth({
     provider:'google',
@@ -230,8 +218,11 @@ async function start(user){
   $('#hdr').textContent = p.role === 'mechanic' ? 'Мои заказы' : 'Диспетчерская';
 
   if (p.role !== 'mechanic'){
-    const { data:m } = await sb.from('profiles').select('id,full_name').eq('role','mechanic').eq('active', true);
+    const { data:m } = await sb.from('profiles')
+      .select('id,full_name,base_zip,phone').eq('role','mechanic').eq('active', true);
     mechanics = m || [];
+    const { data:g } = await sb.from('zip_geo').select('*');
+    for (const z of (g || [])) geo[z.zip] = z;
   }
   await load();
   sb.channel('live')
@@ -241,11 +232,10 @@ async function start(user){
   setInterval(load, 60000);
 }
 
-/* ================= ДАННЫЕ ================= */
 async function load(){
   const { data:rows, error } = await sb
     .from('repair_orders')
-    .select(`id, ro_number, status, problem, address, scheduled_at, created_at, source, tech_id,
+    .select(`id, ro_number, status, problem, address, zip, scheduled_at, created_at, source, tech_id,
              customers ( name, phone ),
              vehicles ( year, make_model, plate ),
              part_lines ( id, name, vendor, status, return_by ),
@@ -257,18 +247,70 @@ async function load(){
   render();
 }
 
-/* ================= ЭКРАНЫ ================= */
 function render(){
   const open = new Set([...document.querySelectorAll('.ro.open')].map(e => e.dataset.id));
-  $('#view').innerHTML = profile.role === 'mechanic' ? viewMechanic() : viewDispatcher();
+  $('#view').innerHTML = profile.role === 'mechanic'
+    ? viewMechanic()
+    : (tabsHtml() + (tab === 'crew' ? viewCrew() : viewDispatcher()));
   open.forEach(id => document.querySelector(`.ro[data-id="${id}"]`)?.classList.add('open'));
   wire();
+}
+
+function tabsHtml(){
+  return `<div class="tabs">
+    <button class="js-tab ${tab==='orders'?'on':''}" data-tab="orders">Заказы</button>
+    <button class="js-tab ${tab==='crew'?'on':''}" data-tab="crew">Механики</button>
+  </div>`;
 }
 
 function viewMechanic(){
   const mine = data.filter(r => r.tech_id === me.id);
   if (!mine.length) return `<div class="empty">Пока ничего не назначено.</div>`;
   return `<section><h2>Сегодня <span>${mine.length}</span></h2>${mine.map(card).join('')}</section>`;
+}
+
+function viewCrew(){
+  if (!mechanics.length) return `<div class="empty">Механики не заведены.</div>`;
+
+  const rows = mechanics.map(m => {
+    const jobs = data.filter(r => r.tech_id === m.id);
+    const now = jobs.filter(r => ['diagnosing','repair'].includes(r.status));
+    const waitParts = jobs.filter(r => r.status === 'parts');
+    const planned = jobs.filter(r => r.status === 'scheduled');
+    const load = jobs.length;
+    const cls = load === 0 ? 'free' : (load > LOAD_MAX ? 'over' : 'busy');
+    const label = load === 0 ? 'свободен'
+      : (now.length ? 'на объекте' : (planned.length ? 'в плане' : 'ждёт запчасти'));
+    const chipCls = load === 0 ? 'go' : (load > LOAD_MAX ? 'hot' : 'wait');
+
+    const cur = now[0];
+    const lines = [];
+    if (cur) lines.push(`<div><b>Сейчас:</b> #${cur.ro_number} ${esc(cur.customers?.name) || ''} · ${esc(cur.address) || 'адрес не указан'}</div>`);
+    if (planned.length) lines.push(`<div><b>Дальше:</b> ${planned.map(r => '#'+r.ro_number).join(', ')}</div>`);
+    if (waitParts.length) lines.push(`<div><b>Ждут запчасти:</b> ${waitParts.map(r => '#'+r.ro_number).join(', ')}</div>`);
+    if (m.base_zip) lines.push(`<div><b>База:</b> ${esc(m.base_zip)}</div>`);
+
+    return `<div class="mech ${cls}">
+      <div class="mech-top">
+        <div class="mech-name">${esc(m.full_name) || 'без имени'}</div>
+        <span class="chip ${chipCls}">${label}</span>
+        <span class="chip">${load} / ${LOAD_MAX}</span>
+      </div>
+      <div class="bar"><i style="width:${Math.min(100, load / LOAD_MAX * 100)}%"></i></div>
+      <div class="mech-jobs">${lines.join('') || '<div>Заказов нет.</div>'}</div>
+    </div>`;
+  }).join('');
+
+  const free = mechanics.filter(m => !data.some(r => r.tech_id === m.id)).length;
+  const noTech = data.filter(r => !r.tech_id && r.status !== 'lead').length;
+
+  return `
+  <div class="tiles">
+    <div class="tile"><div class="n">${mechanics.length}</div><div class="l">Всего</div></div>
+    <div class="tile"><div class="n">${free}</div><div class="l">Свободны</div></div>
+    <div class="tile ${noTech?'hot':''}"><div class="n">${noTech}</div><div class="l">Без механика</div></div>
+  </div>
+  <section><h2>Загрузка <span>активные заказы</span></h2>${rows}</section>`;
 }
 
 function viewDispatcher(){
@@ -310,7 +352,6 @@ function viewDispatcher(){
   </section>`;
 }
 
-/* ================= КАРТОЧКА ================= */
 function card(r){
   const c = r.customers || {}, v = r.vehicles || {};
   const lead = r.status === 'lead';
@@ -322,6 +363,9 @@ function card(r){
   const chip = lead
     ? `<span class="chip ${urgent?'hot':'wait'}">${waited(w)}</span>`
     : `<span class="chip ${hotPart?'wait':'go'}">${RO_STATUS[r.status]}</span>`;
+
+  const sorted = [...mechanics].map(m => ({ m, d: distTo(m, r) }))
+    .sort((a,b) => (a.d ?? 1e9) - (b.d ?? 1e9));
 
   return `
   <div class="ro ${urgent?'urgent':''}" data-id="${r.id}">
@@ -354,7 +398,12 @@ function card(r){
         ${profile.role !== 'mechanic' ? `
           <select class="js-tech" data-id="${r.id}">
             <option value="">— механик —</option>
-            ${mechanics.map(m => `<option value="${m.id}" ${r.tech_id===m.id?'selected':''}>${esc(m.full_name)}</option>`).join('')}
+            ${sorted.map(({m,d}) => {
+              const busy = data.filter(x => x.tech_id === m.id).length;
+              const tail = [d != null ? d + ' км' : null, busy ? busy + ' зак.' : 'свободен']
+                .filter(Boolean).join(', ');
+              return `<option value="${m.id}" ${r.tech_id===m.id?'selected':''}>${esc(m.full_name)} — ${tail}</option>`;
+            }).join('')}
           </select>
           <select class="js-status" data-id="${r.id}">
             ${Object.entries(RO_STATUS).map(([k,l]) => `<option value="${k}" ${r.status===k?'selected':''}>${l}</option>`).join('')}
@@ -367,9 +416,12 @@ function card(r){
   </div>`;
 }
 
-/* ================= ДЕЙСТВИЯ ================= */
 function wire(){
-  document.querySelectorAll('.js-toggle').forEach(el => el.onclick = e => {
+  document.querySelectorAll('.js-tab').forEach(b => b.onclick = () => {
+    tab = b.dataset.tab; render();
+  });
+
+  document.querySelectorAll('.js-toggle').forEach(el => el.onclick = () => {
     const ro = el.closest('.ro');
     ro.classList.toggle('open');
     if (ro.classList.contains('open')) showLog(ro.dataset.id);
@@ -424,7 +476,9 @@ async function upd(id, patch){
 async function showLog(roId){
   const box = document.querySelector(`[data-log="${roId}"]`);
   if (!box || box.dataset.done) return;
-  const { data:ev } = await sb.from('event_log').select('action, details, at').eq('ro_id', roId).order('at', { ascending:false }).limit(12);
+  const { data:ev } = await sb.from('event_log')
+    .select('action, details, at').eq('ro_id', roId)
+    .order('at', { ascending:false }).limit(20);
   box.dataset.done = 1;
   box.innerHTML = (ev || []).map(e => {
     const d = e.details || {};
@@ -436,8 +490,9 @@ async function showLog(roId){
 async function createLead(){
   const name = $('#f-name').value.trim();
   if (!name){ toast('Впиши имя клиента'); return; }
+  const addr = $('#f-addr').value.trim() || null;
   const { data:c, error:e1 } = await sb.from('customers')
-    .insert({ name, phone: $('#f-phone').value.trim() || null, address: $('#f-addr').value.trim() || null, source: $('#f-src').value })
+    .insert({ name, phone: $('#f-phone').value.trim() || null, address: addr, source: $('#f-src').value })
     .select().single();
   if (e1){ toast('Клиент не создался: ' + e1.message); return; }
 
@@ -447,11 +502,11 @@ async function createLead(){
     const { data:v } = await sb.from('vehicles').insert({ customer_id: c.id, make_model: car }).select().single();
     vid = v?.id ?? null;
   }
+  const zip = addr ? ((addr.match(/(\d{5})(?!.*\d{5})/) || [])[1] ?? null) : null;
   const { error:e3 } = await sb.from('repair_orders').insert({
     customer_id: c.id, vehicle_id: vid,
     problem: $('#f-problem').value.trim() || null,
-    address: $('#f-addr').value.trim() || null,
-    source: $('#f-src').value
+    address: addr, zip, source: $('#f-src').value
   });
   if (e3){ toast('Заказ не создался: ' + e3.message); return; }
   ['#f-name','#f-phone','#f-car','#f-problem','#f-addr'].forEach(s => $(s).value = '');
